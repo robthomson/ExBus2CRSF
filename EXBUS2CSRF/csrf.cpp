@@ -2,6 +2,7 @@
 #include <limits.h>
 #include "RTClib.h"
 #include <Time.h>
+#include "csrf.h"
 
 #define CROSSFIRE_CH_BITS           11
 #define CROSSFIRE_CENTER            0x3E0
@@ -10,11 +11,10 @@ uint8_t crc8(const uint8_t * ptr, uint32_t len);
 #define CROSSFIRE_CHANNELS_COUNT  12
 #define MODULE_ADDRESS              0xEE
 #define CHANNELS_ID                 0x16
-
+#define CROSSFIRE_FRAME_MAXLEN         64
 #define REFRESH_INTERVAL 4 //ms
 
 uint8_t lastRefreshTime;
-
 
 
 /*
@@ -40,8 +40,13 @@ void setupPulsesCrossfire()
 uint8_t setupPulsesCrossfire()
 {
         //we need to send something here - no idea what atm!
-        uint8_t * pulses = extmodulePulsesData.crossfire.pulses;
-        extmodulePulsesData.crossfire.length = createCrossfireChannelsFrame(pulses, &channelOutputs[g_model.moduleData[EXTERNAL_MODULE].channelsStart]);
+       // uint8_t * pulses = extmodulePulsesData.crossfire.pulses;
+        //extmodulePulsesData.crossfire.length = createCrossfireChannelsFrame(pulses, &channelOutputs[g_model.moduleData[EXTERNAL_MODULE].channelsStart]);
+        //createCrossfireChannelsFrame(pulses, &channelOutputs[g_model.moduleData[EXTERNAL_MODULE].channelsStart]);
+        uint8_t crossfire[CROSSFIRE_FRAME_MAXLEN];
+        memset(crossfire, 0, sizeof(crossfire));
+        createCrossfireChannelsFrame(crossfire);
+                
         return true;
 }
 
@@ -71,7 +76,8 @@ uint8_t runCrossfire(){
 
 
 
-uint8_t createCrossfireChannelsFrame(uint8_t * frame, int16_t * pulses)
+//uint8_t createCrossfireChannelsFrame(uint8_t * frame, int16_t * pulses)
+uint8_t createCrossfireChannelsFrame(uint8_t * frame)
 {
   uint8_t * buf = frame;
   *buf++ = MODULE_ADDRESS;
@@ -82,7 +88,8 @@ uint8_t createCrossfireChannelsFrame(uint8_t * frame, int16_t * pulses)
   uint8_t bitsavailable = 0;
   for (int i=0; i<CROSSFIRE_CHANNELS_COUNT; i++) {
     //uint32_t val = limit(0, CROSSFIRE_CENTER + (CROSSFIRE_CENTER_CH_OFFSET(i) * 4) / 5 + (pulses[i] * 4) / 5, 2 * CROSSFIRE_CENTER);
-    uint32_t val = pulses[i];
+    //uint32_t val = pulses[i];
+    uint32_t val = 0;
     bits |= val << bitsavailable;
     bitsavailable += CROSSFIRE_CH_BITS;
     while (bitsavailable >= 8) {
