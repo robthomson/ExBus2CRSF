@@ -15,7 +15,13 @@ uint8_t crc8(const uint8_t * ptr, uint32_t len);
 
 uint8_t lastRefreshTime;
 
+
 uint8_t startCrossfire(){
+  Serial1.begin(400000);  //start crossfire serial at 400k
+  return true;
+}
+
+uint8_t runCrossfire(){
 
   if(millis() - lastRefreshTime >= REFRESH_INTERVAL)
   {

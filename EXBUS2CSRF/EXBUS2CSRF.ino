@@ -67,6 +67,8 @@ void setup()
 {
 	Serial.begin( 115200 );
 
+  startCrossfire();
+
   
 	while (!Serial)
 		;
@@ -89,8 +91,8 @@ void loop()
 
 
 
-  //start crossfire comms
-  startCrossfire();
+  //run crossfire comms
+  runCrossfire();
 
 
   
