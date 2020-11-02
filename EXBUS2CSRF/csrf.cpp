@@ -3,6 +3,7 @@
 #include "RTClib.h"
 #include <Time.h>
 #include "csrf.h"
+#include <inttypes.h>
 
 #define CROSSFIRE_CH_BITS           11
 #define CROSSFIRE_CENTER            0x3E0
@@ -15,35 +16,12 @@ uint8_t crc8(const uint8_t * ptr, uint32_t len);
 #define REFRESH_INTERVAL 4 //ms
 
 uint8_t lastRefreshTime;
-
-
-/*
-void setupPulsesCrossfire()
-{
-  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
-    uint8_t * pulses = extmodulePulsesData.crossfire.pulses;
-    {
-      if (moduleState[EXTERNAL_MODULE].counter == CRSF_FRAME_MODELID) {
-        extmodulePulsesData.crossfire.length = createCrossfireModelIDFrame(pulses);
-        moduleState[EXTERNAL_MODULE].counter = CRSF_FRAME_MODELID_SENT;
-      }
-      else {
-        extmodulePulsesData.crossfire.length = createCrossfireChannelsFrame(pulses, &channelOutputs[g_model.moduleData[EXTERNAL_MODULE].channelsStart]);
-      }
-    }
-  }
-
-*/
-
-
-
-
+//const uint8_t frame;
 
 
 uint8_t startCrossfire(){
-  //Serial1.begin(400000);  //start crossfire serial at 400k
-  Serial1.begin(400000, SERIAL_8N1_TXINV | SERIAL_8N1_RXINV);
-  return true;
+    Serial1.begin(400000, SERIAL_8N1_TXINV | SERIAL_8N1_RXINV);
+    return true;
 }
 
 uint8_t runCrossfire(){
@@ -62,15 +40,17 @@ uint8_t runCrossfire(){
 
 uint8_t setupPulsesCrossfire()
 {
-        //we need to send something here - no idea what atm!
-       // uint8_t * pulses = extmodulePulsesData.crossfire.pulses;
-        //extmodulePulsesData.crossfire.length = createCrossfireChannelsFrame(pulses, &channelOutputs[g_model.moduleData[EXTERNAL_MODULE].channelsStart]);
-        //createCrossfireChannelsFrame(pulses, &channelOutputs[g_model.moduleData[EXTERNAL_MODULE].channelsStart]);
+
         uint8_t crossfire[CROSSFIRE_FRAME_MAXLEN];
         memset(crossfire, 0, sizeof(crossfire));
 
-        Serial1.write(createCrossfireChannelsFrame(crossfire));
-                
+
+        //uint8_t length = createCrossfireChannelsFrame(crossfire);
+      //  Serial1.write(crossfire, length);
+
+        uint8_t length = createCrossfireChannelsFrame(frame);
+        Serial1.write(frame, length);
+    
         return true;
 }
 
@@ -89,7 +69,7 @@ uint8_t createCrossfireChannelsFrame(uint8_t * frame)
   for (int i=0; i<CROSSFIRE_CHANNELS_COUNT; i++) {
     //uint32_t val = limit(0, CROSSFIRE_CENTER + (CROSSFIRE_CENTER_CH_OFFSET(i) * 4) / 5 + (pulses[i] * 4) / 5, 2 * CROSSFIRE_CENTER);
     //uint32_t val = pulses[i];
-    uint32_t val = 100;
+    uint32_t val = CROSSFIRE_CENTER;
     bits |= val << bitsavailable;
     bitsavailable += CROSSFIRE_CH_BITS;
     while (bitsavailable >= 8) {
