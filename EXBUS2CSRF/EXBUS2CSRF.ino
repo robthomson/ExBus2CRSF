@@ -61,6 +61,8 @@ JETISENSOR_CONST sensors[] PROGMEM =
 	{ 0 } // end of array
 };
 
+
+
 void setup()
 {
 	Serial.begin( 115200 );
@@ -75,16 +77,28 @@ void setup()
 	exBus.SetJetiboxText(0, "EXBUS2CSRF");
 	exBus.SetJetiboxText(1, "TRANSCODER");
 
+  
 
 }
 
 void loop()
 {
+
+
+  
+
+
+
+  //start crossfire comms
+  startCrossfire();
+
+
+  
 	char buf[30];
 
 	// channel data
-	//if (false)
-	 if ( exBus.HasNewChannelData() )
+	if (false)
+	// if ( exBus.HasNewChannelData() )
 	{
 		int i;
 		for (i = 0; i < exBus.GetNumChannels(); i++)
@@ -110,8 +124,7 @@ void loop()
 		delay( 30 );
 	}
   
-
-  
+ 
 
 
   exBus.SetSensorValue(ID_VOLTAGE, exbusSensor.GetVoltage());

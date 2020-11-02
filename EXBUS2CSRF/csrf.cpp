@@ -1,5 +1,7 @@
- #include <stdint.h> 
- #include <limits.h>
+#include <stdint.h> 
+#include <limits.h>
+#include "RTClib.h"
+#include <Time.h>
 
 #define CROSSFIRE_CH_BITS           11
 #define CROSSFIRE_CENTER            0x3E0
@@ -8,6 +10,23 @@ uint8_t crc8(const uint8_t * ptr, uint32_t len);
 #define CROSSFIRE_CHANNELS_COUNT  12
 #define MODULE_ADDRESS              0xEE
 #define CHANNELS_ID                 0x16
+
+#define REFRESH_INTERVAL 4 //ms
+
+uint8_t lastRefreshTime;
+
+uint8_t startCrossfire(){
+
+  if(millis() - lastRefreshTime >= REFRESH_INTERVAL)
+  {
+            lastRefreshTime += REFRESH_INTERVAL;
+            //we run the code here at 4ms
+            //Serial.println("blink");
+            
+  }
+  return true;
+}
+
 
 uint8_t createCrossfireChannelsFrame(uint8_t * frame, int16_t * pulses)
 {
