@@ -16,6 +16,7 @@ uint8_t crc8(const uint8_t * ptr, uint32_t len);
 #define REFRESH_INTERVAL 4 //ms
 
 uint8_t lastRefreshTime;
+uint8_t frame[CROSSFIRE_FRAME_MAXLEN];
 //const uint8_t frame;
 
 
@@ -43,10 +44,6 @@ uint8_t setupPulsesCrossfire()
 
         uint8_t crossfire[CROSSFIRE_FRAME_MAXLEN];
         memset(crossfire, 0, sizeof(crossfire));
-
-
-        //uint8_t length = createCrossfireChannelsFrame(crossfire);
-      //  Serial1.write(crossfire, length);
 
         uint8_t length = createCrossfireChannelsFrame(frame);
         Serial1.write(frame, length);
