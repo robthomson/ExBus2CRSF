@@ -16,6 +16,37 @@ uint8_t crc8(const uint8_t * ptr, uint32_t len);
 uint8_t lastRefreshTime;
 
 
+
+/*
+void setupPulsesCrossfire()
+{
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
+    uint8_t * pulses = extmodulePulsesData.crossfire.pulses;
+    {
+      if (moduleState[EXTERNAL_MODULE].counter == CRSF_FRAME_MODELID) {
+        extmodulePulsesData.crossfire.length = createCrossfireModelIDFrame(pulses);
+        moduleState[EXTERNAL_MODULE].counter = CRSF_FRAME_MODELID_SENT;
+      }
+      else {
+        extmodulePulsesData.crossfire.length = createCrossfireChannelsFrame(pulses, &channelOutputs[g_model.moduleData[EXTERNAL_MODULE].channelsStart]);
+      }
+    }
+  }
+
+*/
+
+
+
+uint8_t setupPulsesCrossfire()
+{
+        //we need to send something here - no idea what atm!
+        uint8_t * pulses = extmodulePulsesData.crossfire.pulses;
+        extmodulePulsesData.crossfire.length = createCrossfireChannelsFrame(pulses, &channelOutputs[g_model.moduleData[EXTERNAL_MODULE].channelsStart]);
+        return true;
+}
+
+
+
 uint8_t startCrossfire(){
   Serial1.begin(400000);  //start crossfire serial at 400k
   return true;
@@ -28,10 +59,16 @@ uint8_t runCrossfire(){
             lastRefreshTime += REFRESH_INTERVAL;
             //we run the code here at 4ms
             //Serial.println("blink");
+            setupPulsesCrossfire();
             
   }
   return true;
 }
+
+
+
+
+
 
 
 uint8_t createCrossfireChannelsFrame(uint8_t * frame, int16_t * pulses)
