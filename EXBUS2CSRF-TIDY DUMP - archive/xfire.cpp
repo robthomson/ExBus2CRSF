@@ -2,56 +2,49 @@
 #include <limits.h>
 #include "RTClib.h"
 #include <Time.h>
-#include "csrf.h"
+#include "xfire.h"
 #include <inttypes.h>
 
-#define CROSSFIRE_CH_BITS           11
-#define CROSSFIRE_CENTER            0x3E0
-#define CROSSFIRE_CENTER_CH_OFFSET(ch)            (0)
-uint8_t crc8(const uint8_t * ptr, uint32_t len);
-#define CROSSFIRE_CHANNELS_COUNT  12
-#define MODULE_ADDRESS              0xEE
-#define CHANNELS_ID                 0x16
-#define CROSSFIRE_FRAME_MAXLEN         64
-#define REFRESH_INTERVAL 4 //ms
 
-uint8_t lastRefreshTime;
+
+
+uint32_t lastRefreshTime;
 uint8_t frame[CROSSFIRE_FRAME_MAXLEN];
-//const uint8_t frame;
+
+
+
 
 
 uint8_t startCrossfire(){
-    Serial1.begin(400000, SERIAL_8N1_TXINV | SERIAL_8N1_RXINV);
+    //CROSSFIRE_SERIAL.begin(CROSSFIRE_BAUD_RATE, SERIAL_8N1_TXINV | SERIAL_8N1_RXINV);
+     CROSSFIRE_SERIAL.begin(CROSSFIRE_BAUD_RATE,SERIAL_8N1_RXINV_TXINV);
+
     return true;
 }
 
+
 uint8_t runCrossfire(){
 
-  if(millis() - lastRefreshTime >= REFRESH_INTERVAL)
-  {
-            lastRefreshTime += REFRESH_INTERVAL;
-            //we run the code here at 4ms
-            //Serial.println("blink");
-            setupPulsesCrossfire();
+         setupPulsesCrossfire();
 
-  }
-  return true;
+      return 0;
 }
 
 
-uint8_t setupPulsesCrossfire()
-{
 
-        uint8_t crossfire[CROSSFIRE_FRAME_MAXLEN];
-        memset(crossfire, 0, sizeof(crossfire));
+
+void setupPulsesCrossfire()
+{
+       // uint8_t crossfire[CROSSFIRE_FRAME_MAXLEN];
+       // memset(crossfire, 0, sizeof(crossfire));
+        //uint8_t frame[CROSSFIRE_FRAME_MAXLEN];
+        memset(frame, 0, sizeof(frame));
 
         uint8_t length = createCrossfireChannelsFrame(frame);
-        Serial1.write(frame, length);
-    
-        return true;
+        
+        CROSSFIRE_SERIAL.write(frame, length);
+   
 }
-
-
 
 //uint8_t createCrossfireChannelsFrame(uint8_t * frame, int16_t * pulses)
 uint8_t createCrossfireChannelsFrame(uint8_t * frame)
@@ -63,10 +56,19 @@ uint8_t createCrossfireChannelsFrame(uint8_t * frame)
   *buf++ = CHANNELS_ID;
   uint32_t bits = 0;
   uint8_t bitsavailable = 0;
+
+
   for (int i=0; i<CROSSFIRE_CHANNELS_COUNT; i++) {
     //uint32_t val = limit(0, CROSSFIRE_CENTER + (CROSSFIRE_CENTER_CH_OFFSET(i) * 4) / 5 + (pulses[i] * 4) / 5, 2 * CROSSFIRE_CENTER);
-    //uint32_t val = pulses[i];
+    //uint32_t val2 = CSRFpulses[i];
+
+
+    
+   // uint32_t val = exBus.GetChannel(i);
     uint32_t val = CROSSFIRE_CENTER;
+
+   // uint32_t val = CSRFpulses[i];
+    
     bits |= val << bitsavailable;
     bitsavailable += CROSSFIRE_CH_BITS;
     while (bitsavailable >= 8) {
