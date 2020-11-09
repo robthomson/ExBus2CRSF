@@ -19,6 +19,7 @@ JetiExBusProtocol exBus;
 ExbusSensor        exbusSensor; 
 
 
+
 enum
 {
 	ID_VOLTAGE = 1,
@@ -86,6 +87,7 @@ void setup()
 
 }
 
+
 void loop()
 {
 
@@ -103,6 +105,8 @@ void loop()
 		// do time consuming stuff here (20-30ms)
 		delay( 30 );
 	}
+
+
 
 
   exBus.SetSensorValue(ID_VOLTAGE, exbusSensor.GetVoltage());
@@ -127,5 +131,8 @@ void loop()
 	exBus.SetSensorValue(ID_VAL18, exbusSensor.GetVal(11));
 
 	exBus.DoJetiExBus();
+
+ 
+
 
 }
