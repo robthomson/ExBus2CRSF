@@ -93,7 +93,7 @@ void loop()
 
 
 
- 
+         runCrossfireTelemetry();
 
 	// get JETI buttons - at some point maybe make this all work via jetibox?
 	uint8_t bt = exBus.GetJetiboxKey();

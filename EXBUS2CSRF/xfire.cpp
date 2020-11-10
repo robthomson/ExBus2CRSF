@@ -92,7 +92,7 @@ void runCrossfire()
   
         CROSSFIRE_SERIAL.write(frame, length); 
 
-        runCrossfireTelemetry();
+
 
 }
 
@@ -116,6 +116,9 @@ bool getCrossfireTelemetryValue(uint8_t index, int32_t & value)
 
 void processCrossfireTelemetryData(uint8_t data)
 {
+
+
+  
   if (telemetryRxBufferCount == 0 && data != RADIO_ADDRESS) {
     Serial.print("[XF] address 0x%02X error ");
     Serial.println(data);
@@ -145,7 +148,7 @@ void processCrossfireTelemetryData(uint8_t data)
   if (telemetryRxBufferCount > 4) {
     uint8_t length = telemetryRxBuffer[1];
 
-   //Serial.println("Reached step before Process Frame");    
+  // Serial.println("Reached step before Process Frame");    
     if (length + 2 == telemetryRxBufferCount) {
       processCrossfireTelemetryFrame();
       telemetryRxBufferCount = 0;
@@ -156,14 +159,21 @@ void processCrossfireTelemetryData(uint8_t data)
 }
 
 void processCrossfireTelemetryFrame(){
-     Serial.println("Reached Process Frame");
+   // Serial.println("Reached Process Frame");
     if (!checkCrossfireTelemetryFrameCRC()) {
-    Serial.println("[XF] CRC error");
+  //  Serial.println("[XF] CRC error");
     return;
     }
-
+Serial.println("Reached Step After Process Frame");
   uint8_t id = telemetryRxBuffer[2];
   int32_t value;
+
+  Serial.print("ID: ");
+  Serial.print(id);
+  Serial.print(" VALUE: ");  
+  Serial.println(value);  
+
+  
   switch(id) {
     case CF_VARIO_ID:
       if (getCrossfireTelemetryValue<2>(3, value))
