@@ -13,7 +13,8 @@ uint8_t frame[CROSSFIRE_FRAME_MAXLEN];
 extern JetiExBusProtocol exBus;
 
 uint8_t telemetryRxBuffer[TELEMETRY_RX_PACKET_SIZE];
-uint8_t telemetryRxBufferCount;
+uint8_t telemetryRxBufferCount=0;
+
 
 
 const CrossfireSensor crossfireSensors[] = {
@@ -64,6 +65,22 @@ const CrossfireSensor & getCrossfireSensor(uint8_t id, uint8_t subId)
 }
 
 
+void runCrossfireTelemetry(){
+
+      /*
+      if(CROSSFIRE_SERIAL.available()){
+        telemetryRxBufferCount = CROSSFIRE_SERIAL.available();
+        processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
+     }
+     */
+      telemetryRxBufferCount = CROSSFIRE_SERIAL.available();
+      for (int i = 0; i < telemetryRxBufferCount; i++) {
+        processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
+      }     
+   
+}
+
+
 void startCrossfire(){
      CROSSFIRE_SERIAL.begin(CROSSFIRE_BAUD_RATE,SERIAL_8N1_RXINV_TXINV);
 }
@@ -72,28 +89,11 @@ void runCrossfire()
 {
         memset(frame, 0, sizeof(frame));
         uint8_t length = createCrossfireChannelsFrame(frame);
-        CROSSFIRE_SERIAL.write(frame, length);
+  
+        CROSSFIRE_SERIAL.write(frame, length); 
 
+        runCrossfireTelemetry();
 
-        //this gives error of
-        /*
-       [XF] address 0x%02X error 238
-      [XF] address 0x%02X error 238
-      [XF] address 0x%02X error 238
-      [XF] address 0x%02X error 238
-      [XF] address 0x%02X error 24
-      [XF] address 0x%02X error 238
-         */
-        processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
-
-
-      /* this approache does not work 
-        telemetryRxBufferCount = CROSSFIRE_SERIAL.available();
-        for (int n = 0; n < telemetryRxBufferCount; n++) {
-            telemetryRxBuffer[n] = CROSSFIRE_SERIAL.read();
-        }
-        processCrossfireTelemetryData(telemetryRxBuffer);
-       */
 }
 
 template<int N>
@@ -139,16 +139,24 @@ void processCrossfireTelemetryData(uint8_t data)
     telemetryRxBufferCount = 0;
   }
 
+
+
+  
   if (telemetryRxBufferCount > 4) {
     uint8_t length = telemetryRxBuffer[1];
+
+   //Serial.println("Reached step before Process Frame");    
     if (length + 2 == telemetryRxBufferCount) {
       processCrossfireTelemetryFrame();
       telemetryRxBufferCount = 0;
-    }
+   }
   }
+
+  
 }
 
 void processCrossfireTelemetryFrame(){
+     Serial.println("Reached Process Frame");
     if (!checkCrossfireTelemetryFrameCRC()) {
     Serial.println("[XF] CRC error");
     return;
