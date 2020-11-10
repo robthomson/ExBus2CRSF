@@ -12,57 +12,6 @@ uint32_t lastRefreshTime;
 uint8_t frame[CROSSFIRE_FRAME_MAXLEN];
 extern JetiExBusProtocol exBus;
 
-uint8_t telemetryRxBuffer[TELEMETRY_RX_PACKET_SIZE];
-uint8_t telemetryRxBufferCount;
-
-
-const CrossfireSensor crossfireSensors[] = {
-  {LINK_ID,        0, ZSTR_RX_RSSI1,      UNIT_DB,                0},
-  {LINK_ID,        1, ZSTR_RX_RSSI2,      UNIT_DB,                0},
-  {LINK_ID,        2, ZSTR_RX_QUALITY,    UNIT_PERCENT,           0},
-  {LINK_ID,        3, ZSTR_RX_SNR,        UNIT_DB,                0},
-  {LINK_ID,        4, ZSTR_ANTENNA,       UNIT_RAW,               0},
-  {LINK_ID,        5, ZSTR_RF_MODE,       UNIT_RAW,               0},
-  {LINK_ID,        6, ZSTR_TX_POWER,      UNIT_MILLIWATTS,        0},
-  {LINK_ID,        7, ZSTR_TX_RSSI,       UNIT_DB,                0},
-  {LINK_ID,        8, ZSTR_TX_QUALITY,    UNIT_PERCENT,           0},
-  {LINK_ID,        9, ZSTR_TX_SNR,        UNIT_DB,                0},
-  {BATTERY_ID,     0, ZSTR_BATT,          UNIT_VOLTS,             1},
-  {BATTERY_ID,     1, ZSTR_CURR,          UNIT_AMPS,              1},
-  {BATTERY_ID,     2, ZSTR_CAPACITY,      UNIT_MAH,               0},
-  {BATTERY_ID,     3, ZSTR_BATT_PERCENT,  UNIT_PERCENT,           0},
-  {GPS_ID,         0, ZSTR_GPS,           UNIT_GPS_LATITUDE,      0},
-  {GPS_ID,         0, ZSTR_GPS,           UNIT_GPS_LONGITUDE,     0},
-  {GPS_ID,         2, ZSTR_GSPD,          UNIT_KMH,               1},
-  {GPS_ID,         3, ZSTR_HDG,           UNIT_DEGREE,            3},
-  {GPS_ID,         4, ZSTR_ALT,           UNIT_METERS,            0},
-  {GPS_ID,         5, ZSTR_SATELLITES,    UNIT_RAW,               0},
-  {ATTITUDE_ID,    0, ZSTR_PITCH,         UNIT_RADIANS,           3},
-  {ATTITUDE_ID,    1, ZSTR_ROLL,          UNIT_RADIANS,           3},
-  {ATTITUDE_ID,    2, ZSTR_YAW,           UNIT_RADIANS,           3},
-  {FLIGHT_MODE_ID, 0, ZSTR_FLIGHT_MODE,   UNIT_TEXT,              0},
-  {CF_VARIO_ID,    0, ZSTR_VSPD,          UNIT_METERS_PER_SECOND, 2},
-  {0,              0, "UNKNOWN",          UNIT_RAW,               0},
-};
-
-const CrossfireSensor & getCrossfireSensor(uint8_t id, uint8_t subId)
-{
-  if (id == LINK_ID)
-    return crossfireSensors[RX_RSSI1_INDEX+subId];
-  else if (id == BATTERY_ID)
-    return crossfireSensors[BATT_VOLTAGE_INDEX+subId];
-  else if (id == GPS_ID)
-    return crossfireSensors[GPS_LATITUDE_INDEX+subId];
-  else if (id == CF_VARIO_ID)
-    return crossfireSensors[VERTICAL_SPEED_INDEX];
-  else if (id == ATTITUDE_ID)
-    return crossfireSensors[ATTITUDE_PITCH_INDEX+subId];
-  else if (id == FLIGHT_MODE_ID)
-    return crossfireSensors[FLIGHT_MODE_INDEX];
-  else
-    return crossfireSensors[UNKNOWN_INDEX];
-}
-
 
 void startCrossfire(){
      CROSSFIRE_SERIAL.begin(CROSSFIRE_BAUD_RATE,SERIAL_8N1_RXINV_TXINV);
@@ -73,90 +22,9 @@ void runCrossfire()
         memset(frame, 0, sizeof(frame));
         uint8_t length = createCrossfireChannelsFrame(frame);
         CROSSFIRE_SERIAL.write(frame, length);
-
-        //why if I try to read telemetry does csrf fail?
-        //CROSSFIRE_SERIAL.readBytes(telemetryRxBuffer,TELEMETRY_RX_PACKET_SIZE);
-        //processCrossfireTelemetryData(telemetryRxBuffer);
 }
 
-template<int N>
-bool getCrossfireTelemetryValue(uint8_t index, int32_t & value)
-{
-  bool result = false;
-  uint8_t * byte = &telemetryRxBuffer[index];
-  value = (*byte & 0x80) ? -1 : 0;
-  for (uint8_t i=0; i<N; i++) {
-    value <<= 8;
-    if (*byte != 0xff) {
-      result = true;
-    }
-    value += *byte++;
-  }
-  return result;
-}
-
-
-
-void processCrossfireTelemetryData(uint8_t data)
-{
-  if (telemetryRxBufferCount == 0 && data != RADIO_ADDRESS) {
-    //TRACE("[XF] address 0x%02X error", data);
-    return;
-  }
-
-  if (telemetryRxBufferCount == 1 && (data < 2 || data > TELEMETRY_RX_PACKET_SIZE-2)) {
-    //TRACE("[XF] length 0x%02X error", data);
-    telemetryRxBufferCount = 0;
-    return;
-  }
-
-  if (telemetryRxBufferCount < TELEMETRY_RX_PACKET_SIZE) {
-    telemetryRxBuffer[telemetryRxBufferCount++] = data;
-  }
-  else {
-    //TRACE("[XF] array size %d error", telemetryRxBufferCount);
-    telemetryRxBufferCount = 0;
-  }
-
-  if (telemetryRxBufferCount > 4) {
-    uint8_t length = telemetryRxBuffer[1];
-    if (length + 2 == telemetryRxBufferCount) {
-      processCrossfireTelemetryFrame();
-      telemetryRxBufferCount = 0;
-    }
-  }
-}
-
-void processCrossfireTelemetryFrame(){
-    if (!checkCrossfireTelemetryFrameCRC()) {
-    //TRACE("[XF] CRC error");
-    return;
-    }
-
-  uint8_t id = telemetryRxBuffer[2];
-  int32_t value;
-  switch(id) {
-    case CF_VARIO_ID:
-      if (getCrossfireTelemetryValue<2>(3, value))
-        processCrossfireTelemetryValue(VERTICAL_SPEED_INDEX, value);
-      break;
-
-
-  }
-
-  
-}
-
-
-
-void processCrossfireTelemetryValue(uint8_t index, int32_t value)
-{
-  const CrossfireSensor & sensor = crossfireSensors[index];
-  //setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId, value, sensor.unit, sensor.precision);
-  Serial.println(value);
-}
-
-
+//uint8_t createCrossfireChannelsFrame(uint8_t * frame, int16_t * pulses)
 uint8_t createCrossfireChannelsFrame(uint8_t * frame)
 {
   uint8_t * buf = frame;
@@ -168,25 +36,23 @@ uint8_t createCrossfireChannelsFrame(uint8_t * frame)
   uint8_t bitsavailable = 0;
 
 
-              for (int i=0; i<CROSSFIRE_CHANNELS_COUNT; i++) {
-            
-                //uint32_t val = CROSSFIRE_CENTER;
-                uint32_t val = map(exBus.GetChannel(i),EXBUS_LOW,EXBUS_HIGH,CROSSFIRE_LOW,CROSSFIRE_HIGH);
-            
-                bits |= val << bitsavailable;
-                bitsavailable += CROSSFIRE_CH_BITS;
-                while (bitsavailable >= 8) {
-                  *buf++ = bits;
-                  bits >>= 8;
-                  bitsavailable -= 8;
-                }
-              }
-              *buf++ = crc8(crc_start, 23);
+  for (int i=0; i<CROSSFIRE_CHANNELS_COUNT; i++) {
 
-              return buf - frame;
-            }
+    //uint32_t val = CROSSFIRE_CENTER;
+    uint32_t val = map(exBus.GetChannel(i),EXBUS_LOW,EXBUS_HIGH,CROSSFIRE_LOW,CROSSFIRE_HIGH);
 
-       
+    bits |= val << bitsavailable;
+    bitsavailable += CROSSFIRE_CH_BITS;
+    while (bitsavailable >= 8) {
+      *buf++ = bits;
+      bits >>= 8;
+      bitsavailable -= 8;
+    }
+  }
+  *buf++ = crc8(crc_start, 23);
+  return buf - frame;
+}
+
 
 // CRC8 implementation with polynom = x^8+x^7+x^6+x^4+x^2+1 (0xD5)
 unsigned char crc8tab[256] = {
@@ -232,12 +98,4 @@ uint8_t crc8(const uint8_t * ptr, uint32_t len)
     crc = crc8tab[crc ^ *ptr++] ;
   }
   return crc;
-}
-
-
-bool checkCrossfireTelemetryFrameCRC()
-{
-  uint8_t len = telemetryRxBuffer[1];
-  uint8_t crc = crc8(&telemetryRxBuffer[2], len-1);
-  return (crc == telemetryRxBuffer[len+1]);
 }
