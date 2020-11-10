@@ -78,9 +78,6 @@ void setup()
 
   startCrossfire();
 
-  
-  //csrfTimer.begin(runCrossfire, (REFRESH_INTERVAL*1000)); 
-
 	exBus.SetDeviceId(0x76, 0x32); // 0x3276
 	exBus.Start("EX Bus", sensors, 2 ); // com port: 1..3 for Teeny, 0 or 1 for AtMega328PB UART0/UART1, others: not used 
 
@@ -97,7 +94,7 @@ void loop()
  runCrossfire();
 
     
-
+/*
 	// get JETI buttons - at some point maybe make this all work via jetibox?
 	uint8_t bt = exBus.GetJetiboxKey();
 	if( bt )
@@ -111,7 +108,7 @@ void loop()
 		// do time consuming stuff here (20-30ms)
 		delay( 30 );
 	}
-
+*/
 
 
 

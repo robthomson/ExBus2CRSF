@@ -14,7 +14,7 @@ extern JetiExBusProtocol exBus;
 
 uint8_t telemetryRxBuffer[TELEMETRY_RX_PACKET_SIZE];
 uint8_t telemetryRxBufferCount=0;
-
+uint8_t telemetryRxBufferCountStream=0;
 
 
 const CrossfireSensor crossfireSensors[] = {
@@ -88,8 +88,8 @@ void runCrossfire()
 
   } else {                //receive pulses
   
-        telemetryRxBufferCount = CROSSFIRE_SERIAL.available();
-        for (int i = 0; i < telemetryRxBufferCount; i++) {
+        telemetryRxBufferCountStream = CROSSFIRE_SERIAL.available();
+        for (int i = 0; i < telemetryRxBufferCountStream; i++) {
             processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
             CROSSFIRE_SERIAL.read();
 
@@ -125,14 +125,14 @@ void processCrossfireTelemetryData(uint8_t data)
 
   
   if (telemetryRxBufferCount == 0 && data != RADIO_ADDRESS) {
-    Serial.print("[XF] address 0x%02X error ");
-    Serial.println(data);
+  //  Serial.print("[XF] address 0x%02X error ");
+   // Serial.println(data);
     return;
   }
 
   if (telemetryRxBufferCount == 1 && (data < 2 || data > TELEMETRY_RX_PACKET_SIZE-2)) {
-    Serial.print("[XF] length 0x%02X error ");
-    Serial.println(data);
+  //  Serial.print("[XF] length 0x%02X error ");
+  //  Serial.println(data);
         
     telemetryRxBufferCount = 0;
     return;
@@ -142,8 +142,8 @@ void processCrossfireTelemetryData(uint8_t data)
     telemetryRxBuffer[telemetryRxBufferCount++] = data;
   }
   else {
-    Serial.print("[XF] array size error ");
-    Serial.println(telemetryRxBufferCount);    
+   // Serial.print("[XF] array size error ");
+  //  Serial.println(telemetryRxBufferCount);    
     telemetryRxBufferCount = 0;
   }
 
@@ -170,26 +170,58 @@ void processCrossfireTelemetryFrame(){
    // return;
    // }
   //Serial.println("Reached Step After Process Frame");
+
+  
   uint8_t id = telemetryRxBuffer[2];
   int32_t value;
 
 
-  Serial.println(telemetryRxBuffer[2]);
-
-
-  
   switch(id) {
     case CF_VARIO_ID:
-      
-      if (getCrossfireTelemetryValue<2>(3, value)){
-        Serial.println("vario");
+      if (getCrossfireTelemetryValue<2>(3, value))
         processCrossfireTelemetryValue(VERTICAL_SPEED_INDEX, value);
-      }
       break;
+
+    case GPS_ID:
+      if (getCrossfireTelemetryValue<4>(3, value))
+        processCrossfireTelemetryValue(GPS_LATITUDE_INDEX, value/10);
+      if (getCrossfireTelemetryValue<4>(7, value))
+        processCrossfireTelemetryValue(GPS_LONGITUDE_INDEX, value/10);
+      if (getCrossfireTelemetryValue<2>(11, value))
+        processCrossfireTelemetryValue(GPS_GROUND_SPEED_INDEX, value);
+      if (getCrossfireTelemetryValue<2>(13, value))
+        processCrossfireTelemetryValue(GPS_HEADING_INDEX, value);
+      if (getCrossfireTelemetryValue<2>(15, value))
+        processCrossfireTelemetryValue(GPS_ALTITUDE_INDEX,  value - 1000);
+      if (getCrossfireTelemetryValue<1>(17, value))
+        processCrossfireTelemetryValue(GPS_SATELLITES_INDEX, value);
+      break;
+
+    case BATTERY_ID:
+      if (getCrossfireTelemetryValue<2>(3, value))
+        processCrossfireTelemetryValue(BATT_VOLTAGE_INDEX, value);
+      if (getCrossfireTelemetryValue<2>(5, value))
+        processCrossfireTelemetryValue(BATT_CURRENT_INDEX, value);
+      if (getCrossfireTelemetryValue<3>(7, value))
+        processCrossfireTelemetryValue(BATT_CAPACITY_INDEX, value);
+      if (getCrossfireTelemetryValue<1>(10, value))
+        processCrossfireTelemetryValue(BATT_REMAINING_INDEX, value);
+      break;
+
+    case ATTITUDE_ID:
+      if (getCrossfireTelemetryValue<2>(3, value))
+        processCrossfireTelemetryValue(ATTITUDE_PITCH_INDEX, value/10);
+      if (getCrossfireTelemetryValue<2>(5, value))
+        processCrossfireTelemetryValue(ATTITUDE_ROLL_INDEX, value/10);
+      if (getCrossfireTelemetryValue<2>(7, value))
+        processCrossfireTelemetryValue(ATTITUDE_YAW_INDEX, value/10);
+      break;
+
 
 
   }
 
+  
   
 }
 
@@ -197,9 +229,21 @@ void processCrossfireTelemetryFrame(){
 
 void processCrossfireTelemetryValue(uint8_t index, int32_t value)
 {
+  
   const CrossfireSensor & sensor = crossfireSensors[index];
+  Serial.print("ID: ");
+  Serial.print(sensor.id);
+  Serial.print(" SUBID: ");
+  Serial.print(sensor.subId);
+  Serial.print(" VALUE ");
+  Serial.print(value);
+  Serial.print(" UNIT ");
+  Serial.print(sensor.unit);
+  Serial.print(" PRECISION ");
+  Serial.print(sensor.precision);
+  Serial.println(" ");
   //setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId, value, sensor.unit, sensor.precision);
-  Serial.println(value);
+  //Serial.println(value);
 }
 
 
