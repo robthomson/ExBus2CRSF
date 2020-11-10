@@ -12,7 +12,7 @@
 
 
 using namespace TeensyTimerTool;
-PeriodicTimer csrfTimer;
+//PeriodicTimer csrfTimer;
 
 
 JetiExBusProtocol exBus;
@@ -77,7 +77,9 @@ void setup()
   Serial.begin(9600);
 
   startCrossfire();
-  csrfTimer.begin(runCrossfire, (REFRESH_INTERVAL*1000)); 
+
+  
+  //csrfTimer.begin(runCrossfire, (REFRESH_INTERVAL*1000)); 
 
 	exBus.SetDeviceId(0x76, 0x32); // 0x3276
 	exBus.Start("EX Bus", sensors, 2 ); // com port: 1..3 for Teeny, 0 or 1 for AtMega328PB UART0/UART1, others: not used 
@@ -92,8 +94,9 @@ void loop()
 {
 
 
+ runCrossfire();
 
-     runCrossfireTelemetry();
+    
 
 	// get JETI buttons - at some point maybe make this all work via jetibox?
 	uint8_t bt = exBus.GetJetiboxKey();

@@ -24,12 +24,12 @@ uint8_t crc8(const uint8_t * ptr, uint32_t len);
 #define MODULE_ADDRESS              0xEE
 #define CHANNELS_ID                 0x16
 #define CROSSFIRE_FRAME_MAXLEN         64
-#define CROSSFIRE_SERIAL Serial3
+#define CROSSFIRE_SERIAL Serial1
 
 #define EXBUS_LOW   8000
 #define EXBUS_HIGH  16000
 
-#define TELEMETRY_RX_PACKET_SIZE       256
+#define TELEMETRY_RX_PACKET_SIZE       128
 #define RADIO_ADDRESS                  0xEA
 
 

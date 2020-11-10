@@ -15,7 +15,7 @@ extern JetiExBusProtocol exBus;
 uint8_t telemetryRxBuffer[TELEMETRY_RX_PACKET_SIZE];
 uint8_t telemetryRxBufferCount=0;
 
-uint8_t sendingPulses = 1;
+
 
 const CrossfireSensor crossfireSensors[] = {
   {LINK_ID,        0, ZSTR_RX_RSSI1,      UNIT_DB,                0},
@@ -65,22 +65,6 @@ const CrossfireSensor & getCrossfireSensor(uint8_t id, uint8_t subId)
 }
 
 
-void runCrossfireTelemetry(){
-
-      /*
-      if(CROSSFIRE_SERIAL.available()){
-        telemetryRxBufferCount = CROSSFIRE_SERIAL.available();
-        processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
-     }
-     */
-    if(sendingPulses == 0){    
-        telemetryRxBufferCount = CROSSFIRE_SERIAL.available();
-        for (int i = 0; i < telemetryRxBufferCount; i++) {
-          processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
-        }     
-    }   
-}
-
 
 void startCrossfire(){
      CROSSFIRE_SERIAL.begin(CROSSFIRE_BAUD_RATE,SERIAL_8N1_RXINV_TXINV);
@@ -88,13 +72,34 @@ void startCrossfire(){
 
 void runCrossfire()
 {
-        sendingPulses = 1;
-        memset(frame, 0, sizeof(frame));
-        uint8_t length = createCrossfireChannelsFrame(frame);
-  
-        CROSSFIRE_SERIAL.write(frame, length); 
-        sendingPulses = 0;
 
+
+
+  if(millis() - lastRefreshTime >= REFRESH_INTERVAL)  //send pulses
+  {
+  
+            lastRefreshTime += REFRESH_INTERVAL;
+
+            memset(frame, 0, sizeof(frame));
+            uint8_t length = createCrossfireChannelsFrame(frame);
+
+      
+            CROSSFIRE_SERIAL.write(frame, length);     
+
+  } else {                //receive pulses
+
+      
+        telemetryRxBufferCount = CROSSFIRE_SERIAL.available();
+        for (int i = 0; i < telemetryRxBufferCount; i++) {
+            processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
+            CROSSFIRE_SERIAL.read();
+
+        }     
+
+  }
+
+
+  
 
 }
 
