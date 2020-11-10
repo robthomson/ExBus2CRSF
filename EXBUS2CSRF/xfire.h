@@ -29,7 +29,7 @@ uint8_t crc8(const uint8_t * ptr, uint32_t len);
 #define EXBUS_LOW   8000
 #define EXBUS_HIGH  16000
 
-#define TELEMETRY_RX_PACKET_SIZE       128
+#define TELEMETRY_RX_PACKET_SIZE       256
 #define RADIO_ADDRESS                  0xEA
 
 
@@ -308,9 +308,9 @@ enum CrossfireSensorIndexes {
 
 
 //high speed
-#define REFRESH_INTERVAL 4  
-#define CROSSFIRE_BAUD_RATE 400000 //baud
+//#define REFRESH_INTERVAL 4  
+//#define CROSSFIRE_BAUD_RATE 400000 //baud
 
 //slow speed
-//#define REFRESH_INTERVAL 16  
-//#define CROSSFIRE_BAUD_RATE 115200 //baud
+#define REFRESH_INTERVAL 16  
+#define CROSSFIRE_BAUD_RATE 115200 //baud

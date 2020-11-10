@@ -87,15 +87,13 @@ void runCrossfire()
             CROSSFIRE_SERIAL.write(frame, length);     
 
   } else {                //receive pulses
-
-      
+  
         telemetryRxBufferCount = CROSSFIRE_SERIAL.available();
         for (int i = 0; i < telemetryRxBufferCount; i++) {
             processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
             CROSSFIRE_SERIAL.read();
 
         }     
-
   }
 
 
@@ -155,7 +153,7 @@ void processCrossfireTelemetryData(uint8_t data)
   if (telemetryRxBufferCount > 4) {
     uint8_t length = telemetryRxBuffer[1];
 
-    // Serial.println("Reached step before Process Frame");    
+   //  Serial.println("Reached step before Process Frame");    
     if (length + 2 == telemetryRxBufferCount) {
       processCrossfireTelemetryFrame();
       telemetryRxBufferCount = 0;
@@ -167,16 +165,16 @@ void processCrossfireTelemetryData(uint8_t data)
 
 void processCrossfireTelemetryFrame(){
    // Serial.println("Reached Process Frame");
-    if (!checkCrossfireTelemetryFrameCRC()) {
-  //  Serial.println("[XF] CRC error");
-    return;
-    }
+   // if (!checkCrossfireTelemetryFrameCRC()) {
+   // Serial.println("[XF] CRC error");
+   // return;
+   // }
   //Serial.println("Reached Step After Process Frame");
   uint8_t id = telemetryRxBuffer[2];
   int32_t value;
 
 
-  Serial.print(telemetryRxBuffer[2]);
+  Serial.println(telemetryRxBuffer[2]);
 
 
   
