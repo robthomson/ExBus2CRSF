@@ -30,7 +30,6 @@
 **************************************************************/
 
 #include "ExbusSensor.h"
-#include "xfire.h"
 
 /*
   jetiEx.SetSensorValue( ID_VOLTAGE,   81 );  // 8.1 volt

@@ -2,17 +2,14 @@
 
 #include "JetiExBusProtocol.h"
 #include "ExbusSensor.h"
-#include <stdint.h> 
-#include "xfire.h"
-#include <limits.h>
-#include "RTClib.h"
-#include <Time.h>
-#include <inttypes.h>
-#include "TeensyTimerTool.h"
+#include "csrf.h"
 
 
+<<<<<<< HEAD
 using namespace TeensyTimerTool;
 PeriodicTimer csrfTimer;
+=======
+>>>>>>> parent of c0485ab... Working with no telemtry
 
 
 JetiExBusProtocol exBus;
@@ -74,10 +71,17 @@ JETISENSOR_CONST sensors[] PROGMEM =
 
 void setup()
 {
-  Serial.begin(9600);
+	Serial.begin( 115200 );
 
   startCrossfire();
+<<<<<<< HEAD
   csrfTimer.begin(runCrossfire, (REFRESH_INTERVAL*1000)); 
+=======
+
+  
+	while (!Serial)
+		;
+>>>>>>> parent of c0485ab... Working with no telemtry
 
 	exBus.SetDeviceId(0x76, 0x32); // 0x3276
 	exBus.Start("EX Bus", sensors, 2 ); // com port: 1..3 for Teeny, 0 or 1 for AtMega328PB UART0/UART1, others: not used 
@@ -92,7 +96,36 @@ void loop()
 {
 
 
+<<<<<<< HEAD
 	// get JETI buttons - at some point maybe make this all work via jetibox?
+=======
+  
+
+
+
+  //run crossfire comms
+  runCrossfire();
+
+
+  
+	char buf[30];
+
+	// channel data
+	if (false)
+	// if ( exBus.HasNewChannelData() )
+	{
+		int i;
+		for (i = 0; i < exBus.GetNumChannels(); i++)
+		{
+			sprintf(buf, "chan-%d: %d", i, exBus.GetChannel(i));
+			Serial.println(buf);
+		}
+	}
+
+ 
+  
+	// get JETI buttons
+>>>>>>> parent of c0485ab... Working with no telemtry
 	uint8_t bt = exBus.GetJetiboxKey();
 	if( bt )
 	{
@@ -130,9 +163,15 @@ void loop()
 	exBus.SetSensorValue(ID_VAL17, exbusSensor.GetVal(10));
 	exBus.SetSensorValue(ID_VAL18, exbusSensor.GetVal(11));
 
+<<<<<<< HEAD
 	exBus.DoJetiExBus();
 
  
 
 
+=======
+
+	// run protocol state machine
+	exBus.DoJetiExBus();
+>>>>>>> parent of c0485ab... Working with no telemtry
 }
