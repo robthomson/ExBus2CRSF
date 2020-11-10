@@ -15,7 +15,7 @@ extern JetiExBusProtocol exBus;
 uint8_t telemetryRxBuffer[TELEMETRY_RX_PACKET_SIZE];
 uint8_t telemetryRxBufferCount=0;
 
-
+uint8_t sendingPulses = 1;
 
 const CrossfireSensor crossfireSensors[] = {
   {LINK_ID,        0, ZSTR_RX_RSSI1,      UNIT_DB,                0},
@@ -73,11 +73,12 @@ void runCrossfireTelemetry(){
         processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
      }
      */
-      telemetryRxBufferCount = CROSSFIRE_SERIAL.available();
-      for (int i = 0; i < telemetryRxBufferCount; i++) {
-        processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
-      }     
-   
+    if(sendingPulses == 0){    
+        telemetryRxBufferCount = CROSSFIRE_SERIAL.available();
+        for (int i = 0; i < telemetryRxBufferCount; i++) {
+          processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
+        }     
+    }   
 }
 
 
@@ -87,11 +88,12 @@ void startCrossfire(){
 
 void runCrossfire()
 {
+        sendingPulses = 1;
         memset(frame, 0, sizeof(frame));
         uint8_t length = createCrossfireChannelsFrame(frame);
   
         CROSSFIRE_SERIAL.write(frame, length); 
-
+        sendingPulses = 0;
 
 
 }
@@ -148,7 +150,7 @@ void processCrossfireTelemetryData(uint8_t data)
   if (telemetryRxBufferCount > 4) {
     uint8_t length = telemetryRxBuffer[1];
 
-  // Serial.println("Reached step before Process Frame");    
+    // Serial.println("Reached step before Process Frame");    
     if (length + 2 == telemetryRxBufferCount) {
       processCrossfireTelemetryFrame();
       telemetryRxBufferCount = 0;
@@ -164,20 +166,22 @@ void processCrossfireTelemetryFrame(){
   //  Serial.println("[XF] CRC error");
     return;
     }
-Serial.println("Reached Step After Process Frame");
+  //Serial.println("Reached Step After Process Frame");
   uint8_t id = telemetryRxBuffer[2];
   int32_t value;
 
-  Serial.print("ID: ");
-  Serial.print(id);
-  Serial.print(" VALUE: ");  
-  Serial.println(value);  
+
+  Serial.print(telemetryRxBuffer[2]);
+
 
   
   switch(id) {
     case CF_VARIO_ID:
-      if (getCrossfireTelemetryValue<2>(3, value))
+      
+      if (getCrossfireTelemetryValue<2>(3, value)){
+        Serial.println("vario");
         processCrossfireTelemetryValue(VERTICAL_SPEED_INDEX, value);
+      }
       break;
 
 
