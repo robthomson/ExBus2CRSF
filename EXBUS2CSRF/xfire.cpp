@@ -17,8 +17,22 @@ uint8_t telemetryRxBuffer[TELEMETRY_RX_PACKET_SIZE];
 uint8_t telemetryRxBufferCount=0;
 uint8_t telemetryRxBufferCountStream=0;
 
-extern int32_t sensorGPSLat;
-extern int32_t sensorGPSLong;
+extern float sensorVario;
+extern float sensorGPSLat;
+extern float sensorGPSLong;
+extern float sensorAltitude;
+extern float sensorHeading;
+extern uint32_t sensorSpeed;
+extern uint32_t sensorSats;
+extern float sensorPitch;
+extern float sensorRoll;
+extern float sensorYaw;
+extern double sensorVoltage;
+extern double sensorCurrent;
+extern double sensorFuel;
+extern double sensorRSSI;
+extern double sensorSNR;
+extern double sensorTXPWR;
 
 const CrossfireSensor crossfireSensors[] = {
   {LINK_ID,        0, ZSTR_RX_RSSI1,      UNIT_DB,                0},
@@ -177,51 +191,99 @@ void processCrossfireTelemetryFrame(){
 
   switch(id) {
 
-  
-    
+   break; 
     case CF_VARIO_ID:
+        Serial.println("VARIO");
       if (getCrossfireTelemetryValue<2>(3, value))
         processCrossfireTelemetryValue(VERTICAL_SPEED_INDEX, value);
       break;
 
     case GPS_ID:
-      if (getCrossfireTelemetryValue<4>(3, value))
+      if (getCrossfireTelemetryValue<4>(3, value)){
+        Serial.println("LATITUDE");
         processCrossfireTelemetryValue(GPS_LATITUDE_INDEX, value/10);
-      if (getCrossfireTelemetryValue<4>(7, value))
+      }  
+      if (getCrossfireTelemetryValue<4>(7, value)){
+        Serial.println("LONGITUDE");        
         processCrossfireTelemetryValue(GPS_LONGITUDE_INDEX, value/10);
-      if (getCrossfireTelemetryValue<2>(11, value))
-        processCrossfireTelemetryValue(GPS_GROUND_SPEED_INDEX, value);
-      if (getCrossfireTelemetryValue<2>(13, value))
-        processCrossfireTelemetryValue(GPS_HEADING_INDEX, value);
-      if (getCrossfireTelemetryValue<2>(15, value))
+      }  
+      if (getCrossfireTelemetryValue<2>(11, value)){
+                Serial.println("GROUND SPEED"); 
+                processCrossfireTelemetryValue(GPS_GROUND_SPEED_INDEX, value);
+      }
+
+      if (getCrossfireTelemetryValue<2>(13, value)){
+         Serial.println("HEADING"); 
+          processCrossfireTelemetryValue(GPS_HEADING_INDEX, value);
+      }  
+      if (getCrossfireTelemetryValue<2>(15, value)) {
+        Serial.println("ALTITUDE");
         processCrossfireTelemetryValue(GPS_ALTITUDE_INDEX,  value - 1000);
-      if (getCrossfireTelemetryValue<1>(17, value))
-        processCrossfireTelemetryValue(GPS_SATELLITES_INDEX, value);
+
+      }  
+      if (getCrossfireTelemetryValue<1>(17, value)){
+         Serial.println("SATELLITES");
+          processCrossfireTelemetryValue(GPS_SATELLITES_INDEX, value);
+      }  
       break;
 
     case BATTERY_ID:
-      if (getCrossfireTelemetryValue<2>(3, value))
+      if (getCrossfireTelemetryValue<2>(3, value)){
+         Serial.println("BATTERY VOLTAGE");
         processCrossfireTelemetryValue(BATT_VOLTAGE_INDEX, value);
-      if (getCrossfireTelemetryValue<2>(5, value))
+      }  
+      if (getCrossfireTelemetryValue<2>(5, value)){
+        Serial.println("BATTERY CURRENT");
         processCrossfireTelemetryValue(BATT_CURRENT_INDEX, value);
-      if (getCrossfireTelemetryValue<3>(7, value))
+      }  
+      if (getCrossfireTelemetryValue<3>(7, value)){
+        Serial.println("BATTERY CAPACITY");        
         processCrossfireTelemetryValue(BATT_CAPACITY_INDEX, value);
-      if (getCrossfireTelemetryValue<1>(10, value))
+      }  
+      if (getCrossfireTelemetryValue<1>(10, value)){
+        Serial.println("BATTERY REMAINING");         
         processCrossfireTelemetryValue(BATT_REMAINING_INDEX, value);
+      }   
       break;
 
     case ATTITUDE_ID:
-      if (getCrossfireTelemetryValue<2>(3, value))
+      if (getCrossfireTelemetryValue<2>(3, value)){
+        Serial.println("ATTITIDE PITCH"); 
         processCrossfireTelemetryValue(ATTITUDE_PITCH_INDEX, value/10);
-      if (getCrossfireTelemetryValue<2>(5, value))
+      }  
+      if (getCrossfireTelemetryValue<2>(5, value)){
+        Serial.println("ATTITIDE ROLL"); 
         processCrossfireTelemetryValue(ATTITUDE_ROLL_INDEX, value/10);
-      if (getCrossfireTelemetryValue<2>(7, value))
+      }  
+      if (getCrossfireTelemetryValue<2>(7, value)){
+        Serial.println("ATTITIDE YAW"); 
         processCrossfireTelemetryValue(ATTITUDE_YAW_INDEX, value/10);
+      }  
       break;
 
 
+    case LINK_ID:
+         Serial.println("LINK STATS");
+            for (unsigned int i=0; i<=TX_SNR_INDEX; i++) {
+              if (getCrossfireTelemetryValue<1>(3+i, value)) {
+                processCrossfireTelemetryValue(i, value);
+                }
+            }
+      
+      break;
 
-
+     case FLIGHT_MODE_ID:
+    {
+      Serial.println("FLIGHT MODE");
+      const CrossfireSensor & sensor = crossfireSensors[FLIGHT_MODE_INDEX];
+      for (int i=0; i<min<int>(16, telemetryRxBuffer[1]-2); i+=4) {
+        uint32_t value = *((uint32_t *)&telemetryRxBuffer[3+i]);
+        processCrossfireTelemetryValue(i, value);
+       // setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId, value, sensor.unit, i);
+       //Serial.println(value);
+      }
+      break;
+    }
 
   }
 
@@ -241,7 +303,10 @@ void processCrossfireTelemetryValue(uint8_t index, int32_t value)
 
 }
 
+
+
 void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec){
+
 
               Serial.print("ID: ");
             Serial.print(id);
@@ -258,20 +323,88 @@ void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t insta
             Serial.print(" PRECISION ");
             Serial.print(prec);
             Serial.println(" ");
-            
-  
-  switch(id) {
-      case GPS_ID:
-              if(instance == 14 && index == 0){       //lattitude 
-                sensorGPSLat = value;
-              }
-              if(instance == 15 && index == 0){       //longitude
-                sensorGPSLong = value;
-              }
-      break;
 
+ static const int32_t power_values[] = { 0, 10, 25, 100, 500, 1000, 2000, 250 };
+
+  switch(id) {
+      case LINK_ID:
+               if(instance == 8 && index == 8){      
+                sensorRSSI = value;
+              }        
+               if(instance == 9 && index == 9){      
+                sensorSNR = value;
+              }    
+               if(instance == 6 && index == 6){       
+
+                sensorTXPWR = power_values[value];
+              }    
+
+          break;
+      case CF_VARIO_ID:
+              if(instance == 24 && index == 0){       //lattitude 
+                sensorVario = value;
+              }
+
+            break;
+      case GPS_ID:
+              //this lat and long is not correct at the moment.  Just a simple conversion to test
+              if(instance == 14 && index == 0){       //lattitude 
+                sensorGPSLat =  (double) value/1000000;
+              }
+              //this lat and long is not correct at the moment.  Just a simple conversion to test
+              if(instance == 15 && index == 0){       //longitude
+                sensorGPSLong = (double) value/1000000;
+                //Serial.println(sensorGPSLong,DEC);
+              }
+              //altitude  - check this is working as seems slow to respond - may be that its gps alt only
+              if(instance == 18 && index == 4){
+                  sensorAltitude = value;
+              }
+              //Heading
+              if(instance == 17 && index == 3){
+                  sensorHeading = (double) value/10;
+              }
+              //Speed
+              if(instance == 16 && index == 2){
+                  sensorSpeed = value;                            
+              }
+              //Sats
+              if(instance == 19 && index == 5){
+                  sensorSats = value;                            
+              }              
+          break;
+    case ATTITUDE_ID:      
+              //Pitch
+              if(instance == 20 && index == 0){
+                  sensorPitch = (double) value/10;                            
+              }                       
+              //Roll
+              if(instance == 21 && index == 1){
+                  sensorRoll = (double) value/10;                            
+              }   
+              //Yaw
+              if(instance == 22 && index == 2){
+                  sensorYaw = (double) value/10;                            
+              } 
+          break;
+    case BATTERY_ID:
+              //Voltage
+              if(instance == 10 && index == 0){
+                  sensorVoltage =  value;                        
+              } 
+              //current
+              if(instance == 11 && index == 1){
+                  sensorCurrent =  value;                        
+              }                             
+              //fuel
+              if(instance == 13 && index == 3){
+                  sensorFuel =  value;                        
+              }    
+          break;
   }    
 }
+
+
 
 
 uint8_t createCrossfireChannelsFrame(uint8_t * frame)
