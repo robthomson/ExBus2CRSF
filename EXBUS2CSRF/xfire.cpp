@@ -18,8 +18,8 @@ uint8_t telemetryRxBufferCount=0;
 uint8_t telemetryRxBufferCountStream=0;
 
 extern float sensorVario;
-extern float sensorGPSLat;
-extern float sensorGPSLong;
+extern double sensorGPSLat;
+extern double sensorGPSLong;
 extern float sensorAltitude;
 extern float sensorHeading;
 extern uint32_t sensorSpeed;
@@ -86,6 +86,7 @@ const CrossfireSensor & getCrossfireSensor(uint8_t id, uint8_t subId)
 void startCrossfire(){
      CROSSFIRE_SERIAL.begin(CROSSFIRE_BAUD_RATE,SERIAL_8N1_RXINV_TXINV);
 }
+
 
 
 
@@ -193,77 +194,77 @@ void processCrossfireTelemetryFrame(){
 
    break; 
     case CF_VARIO_ID:
-        Serial.println("VARIO");
+       // Serial.println("VARIO");
       if (getCrossfireTelemetryValue<2>(3, value))
         processCrossfireTelemetryValue(VERTICAL_SPEED_INDEX, value);
       break;
 
     case GPS_ID:
       if (getCrossfireTelemetryValue<4>(3, value)){
-        Serial.println("LATITUDE");
+       // Serial.println("LATITUDE");
         processCrossfireTelemetryValue(GPS_LATITUDE_INDEX, value/10);
       }  
       if (getCrossfireTelemetryValue<4>(7, value)){
-        Serial.println("LONGITUDE");        
+     //   Serial.println("LONGITUDE");        
         processCrossfireTelemetryValue(GPS_LONGITUDE_INDEX, value/10);
       }  
       if (getCrossfireTelemetryValue<2>(11, value)){
-                Serial.println("GROUND SPEED"); 
+             //   Serial.println("GROUND SPEED"); 
                 processCrossfireTelemetryValue(GPS_GROUND_SPEED_INDEX, value);
       }
 
       if (getCrossfireTelemetryValue<2>(13, value)){
-         Serial.println("HEADING"); 
+    //     Serial.println("HEADING"); 
           processCrossfireTelemetryValue(GPS_HEADING_INDEX, value);
       }  
       if (getCrossfireTelemetryValue<2>(15, value)) {
-        Serial.println("ALTITUDE");
+    //    Serial.println("ALTITUDE");
         processCrossfireTelemetryValue(GPS_ALTITUDE_INDEX,  value - 1000);
 
       }  
       if (getCrossfireTelemetryValue<1>(17, value)){
-         Serial.println("SATELLITES");
+     //    Serial.println("SATELLITES");
           processCrossfireTelemetryValue(GPS_SATELLITES_INDEX, value);
       }  
       break;
 
     case BATTERY_ID:
       if (getCrossfireTelemetryValue<2>(3, value)){
-         Serial.println("BATTERY VOLTAGE");
+     //    Serial.println("BATTERY VOLTAGE");
         processCrossfireTelemetryValue(BATT_VOLTAGE_INDEX, value);
       }  
       if (getCrossfireTelemetryValue<2>(5, value)){
-        Serial.println("BATTERY CURRENT");
+      //  Serial.println("BATTERY CURRENT");
         processCrossfireTelemetryValue(BATT_CURRENT_INDEX, value);
       }  
       if (getCrossfireTelemetryValue<3>(7, value)){
-        Serial.println("BATTERY CAPACITY");        
+       // Serial.println("BATTERY CAPACITY");        
         processCrossfireTelemetryValue(BATT_CAPACITY_INDEX, value);
       }  
       if (getCrossfireTelemetryValue<1>(10, value)){
-        Serial.println("BATTERY REMAINING");         
+      //  Serial.println("BATTERY REMAINING");         
         processCrossfireTelemetryValue(BATT_REMAINING_INDEX, value);
       }   
       break;
 
     case ATTITUDE_ID:
       if (getCrossfireTelemetryValue<2>(3, value)){
-        Serial.println("ATTITIDE PITCH"); 
+     //   Serial.println("ATTITIDE PITCH"); 
         processCrossfireTelemetryValue(ATTITUDE_PITCH_INDEX, value/10);
       }  
       if (getCrossfireTelemetryValue<2>(5, value)){
-        Serial.println("ATTITIDE ROLL"); 
+      //  Serial.println("ATTITIDE ROLL"); 
         processCrossfireTelemetryValue(ATTITUDE_ROLL_INDEX, value/10);
       }  
       if (getCrossfireTelemetryValue<2>(7, value)){
-        Serial.println("ATTITIDE YAW"); 
+       // Serial.println("ATTITIDE YAW"); 
         processCrossfireTelemetryValue(ATTITUDE_YAW_INDEX, value/10);
       }  
       break;
 
 
     case LINK_ID:
-         Serial.println("LINK STATS");
+         //Serial.println("LINK STATS");
             for (unsigned int i=0; i<=TX_SNR_INDEX; i++) {
               if (getCrossfireTelemetryValue<1>(3+i, value)) {
                 processCrossfireTelemetryValue(i, value);
@@ -274,7 +275,7 @@ void processCrossfireTelemetryFrame(){
 
      case FLIGHT_MODE_ID:
     {
-      Serial.println("FLIGHT MODE");
+      //Serial.println("FLIGHT MODE");
       const CrossfireSensor & sensor = crossfireSensors[FLIGHT_MODE_INDEX];
       for (int i=0; i<min<int>(16, telemetryRxBuffer[1]-2); i+=4) {
         uint32_t value = *((uint32_t *)&telemetryRxBuffer[3+i]);
@@ -307,7 +308,7 @@ void processCrossfireTelemetryValue(uint8_t index, int32_t value)
 
 void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec){
 
-
+/*
               Serial.print("ID: ");
             Serial.print(id);
             Serial.print(" SUBID: ");
@@ -323,6 +324,7 @@ void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t insta
             Serial.print(" PRECISION ");
             Serial.print(prec);
             Serial.println(" ");
+*/
 
  static const int32_t power_values[] = { 0, 10, 25, 100, 500, 1000, 2000, 250 };
 
@@ -350,11 +352,12 @@ void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t insta
               //this lat and long is not correct at the moment.  Just a simple conversion to test
               if(instance == 14 && index == 0){       //lattitude 
                 sensorGPSLat =  (double) value/1000000;
+
               }
               //this lat and long is not correct at the moment.  Just a simple conversion to test
               if(instance == 15 && index == 0){       //longitude
                 sensorGPSLong = (double) value/1000000;
-                //Serial.println(sensorGPSLong,DEC);
+
               }
               //altitude  - check this is working as seems slow to respond - may be that its gps alt only
               if(instance == 18 && index == 4){

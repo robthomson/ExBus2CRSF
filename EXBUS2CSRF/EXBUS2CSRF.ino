@@ -19,8 +19,8 @@ JetiExBusProtocol exBus;
 ExbusSensor        exbusSensor; 
 
 
-float sensorGPSLat;
-float sensorGPSLong;
+double sensorGPSLat;
+double sensorGPSLong;
 float sensorHeading=0;
 float sensorAltitude=0;
 uint32_t sensorSpeed=0;
@@ -63,18 +63,8 @@ enum
 JETISENSOR_CONST sensors[] PROGMEM =
 {
 	// id             name          unit         data type             precision 
-	/*{ ID_VOLTAGE,    "Voltage",    "V",         JetiSensor::TYPE_14b, 1 },*/
-	/*{ ID_ALTITUDE,   "Altitude",   "m",         JetiSensor::TYPE_14b, 0 },*/
-	/*{ ID_TEMP,       "Temp",       "\xB0\x43",  JetiSensor::TYPE_14b, 0 }, // �C*/
-/*	{ ID_CLIMB,      "Climb",      "m/s",       JetiSensor::TYPE_14b, 2 },*/
-	/*{ ID_FUEL,       "Fuel",       "%",         JetiSensor::TYPE_14b, 0 },*/
-	/*{ ID_RPM,        "RPM x 1000", "/min",      JetiSensor::TYPE_14b, 1 },*/
-
 	{ ID_GPSLON,     "Longitude",  " ",         JetiSensor::TYPE_GPS, 0 },
 	{ ID_GPSLAT,     "Latitude",   " ",         JetiSensor::TYPE_GPS, 0 },
-	/*{ ID_DATE,       "Date",       " ",         JetiSensor::TYPE_DT,  0 },*/
-	/*{ ID_TIME,       "Time",       " ",         JetiSensor::TYPE_DT,  0 },*/
-
 	{ ID_VAL11,      "Ground Speed",        "m/s",       JetiSensor::TYPE_14b, 2 },
 	{ ID_VAL12,      "Altitude",        "m",       JetiSensor::TYPE_14b, 0 },
 	{ ID_VAL13,      "Satellites",        "",       JetiSensor::TYPE_14b, 0 },
@@ -134,25 +124,19 @@ void loop()
 
 
 
- // exBus.SetSensorValue(ID_VOLTAGE, sensorVoltage);
-  
- // exBus.SetSensorValue(ID_ALTITUDE, sensorAltitude);
 
   
 	exBus.SetSensorValue(ID_TEMP, exbusSensor.GetTemp());
 	exBus.SetSensorValue(ID_CLIMB, exbusSensor.GetClimb());
-	//exBus.SetSensorValue(ID_FUEL, exbusSensor.GetFuel());
+
 	exBus.SetSensorValue(ID_RPM, exbusSensor.GetRpm());
 
-	//exBus.SetSensorValueGPS(ID_GPSLON, true, 11.55616f); // E 11� 33' 22.176"
-	//exBus.SetSensorValueGPS(ID_GPSLAT, false, 48.24570f); // N 48� 14' 44.520"
+
+
    exBus.SetSensorValueGPS(ID_GPSLAT, false, sensorGPSLat); 
    exBus.SetSensorValueGPS(ID_GPSLON, true, sensorGPSLong); 
 
-  /*
-	exBus.SetSensorValueDate(ID_DATE, 29, 12, 2015);
-	exBus.SetSensorValueTime(ID_TIME, 19, 16, 37);
-*/
+
 	exBus.SetSensorValue(ID_VAL11, sensorSpeed);
 
   exBus.SetSensorValue(ID_VAL12, sensorAltitude);
@@ -168,15 +152,10 @@ void loop()
   exBus.SetSensorValue(ID_VAL22, sensorRSSI);    
   exBus.SetSensorValue(ID_VAL23, sensorSNR);   
   exBus.SetSensorValue(ID_VAL24, sensorTXPWR);     
+
+
   
-  /*
 
-
-	exBus.SetSensorValue(ID_VAL15, exbusSensor.GetVal(8));
-	exBus.SetSensorValue(ID_VAL16, exbusSensor.GetVal(9));
-	exBus.SetSensorValue(ID_VAL17, exbusSensor.GetVal(10));
-	exBus.SetSensorValue(ID_VAL18, exbusSensor.GetVal(11));
-*/
 
 	exBus.DoJetiExBus();
 
