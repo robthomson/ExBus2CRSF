@@ -19,6 +19,8 @@ JetiExBusProtocol exBus;
 ExbusSensor        exbusSensor; 
 
 
+int32_t sensorGPSLat;
+int32_t sensorGPSLong;
 
 enum
 {
@@ -119,8 +121,11 @@ void loop()
 	exBus.SetSensorValue(ID_FUEL, exbusSensor.GetFuel());
 	exBus.SetSensorValue(ID_RPM, exbusSensor.GetRpm());
 
-	exBus.SetSensorValueGPS(ID_GPSLON, true, 11.55616f); // E 11� 33' 22.176"
-	exBus.SetSensorValueGPS(ID_GPSLAT, false, 48.24570f); // N 48� 14' 44.520"
+	//exBus.SetSensorValueGPS(ID_GPSLON, true, 11.55616f); // E 11� 33' 22.176"
+	//exBus.SetSensorValueGPS(ID_GPSLAT, false, 48.24570f); // N 48� 14' 44.520"
+   exBus.SetSensorValueGPS(ID_GPSLAT, false, sensorGPSLat); // N 48� 14' 44.520"
+   exBus.SetSensorValueGPS(ID_GPSLON, false, sensorGPSLong); // N 48� 14' 44.520"
+  
 	exBus.SetSensorValueDate(ID_DATE, 29, 12, 2015);
 	exBus.SetSensorValueTime(ID_TIME, 19, 16, 37);
 

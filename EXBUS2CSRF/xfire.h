@@ -10,6 +10,7 @@ void processCrossfireTelemetryData(uint8_t data);
 void processCrossfireTelemetryFrame();
 //bool getCrossfireTelemetryValue(uint8_t index, int32_t & value);
 void processCrossfireTelemetryValue(uint8_t index, int32_t value);
+void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec);
 
 uint8_t crc8(const uint8_t * ptr, uint32_t len);
 
@@ -307,7 +308,7 @@ enum CrossfireSensorIndexes {
 
 
 
-//high speed
+//high speed  - can only be used on teensy if running with control link only.  so no telemetry
 //#define REFRESH_INTERVAL 4  
 //#define CROSSFIRE_BAUD_RATE 400000 //baud
 

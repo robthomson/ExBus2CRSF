@@ -11,11 +11,14 @@
 uint32_t lastRefreshTime;
 uint8_t frame[CROSSFIRE_FRAME_MAXLEN];
 extern JetiExBusProtocol exBus;
+extern ExbusSensor        exbusSensor;
 
 uint8_t telemetryRxBuffer[TELEMETRY_RX_PACKET_SIZE];
 uint8_t telemetryRxBufferCount=0;
 uint8_t telemetryRxBufferCountStream=0;
 
+extern int32_t sensorGPSLat;
+extern int32_t sensorGPSLong;
 
 const CrossfireSensor crossfireSensors[] = {
   {LINK_ID,        0, ZSTR_RX_RSSI1,      UNIT_DB,                0},
@@ -70,9 +73,11 @@ void startCrossfire(){
      CROSSFIRE_SERIAL.begin(CROSSFIRE_BAUD_RATE,SERIAL_8N1_RXINV_TXINV);
 }
 
+
+
+
 void runCrossfire()
 {
-
 
 
   if(millis() - lastRefreshTime >= REFRESH_INTERVAL)  //send pulses
@@ -84,20 +89,16 @@ void runCrossfire()
             uint8_t length = createCrossfireChannelsFrame(frame);
 
       
-            CROSSFIRE_SERIAL.write(frame, length);     
+            CROSSFIRE_SERIAL.write(frame, length);   
 
   } else {                //receive pulses
   
         telemetryRxBufferCountStream = CROSSFIRE_SERIAL.available();
         for (int i = 0; i < telemetryRxBufferCountStream; i++) {
             processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
-            CROSSFIRE_SERIAL.read();
-
         }     
   }
 
-
-  
 
 }
 
@@ -125,15 +126,14 @@ void processCrossfireTelemetryData(uint8_t data)
 
   
   if (telemetryRxBufferCount == 0 && data != RADIO_ADDRESS) {
-  //  Serial.print("[XF] address 0x%02X error ");
-   // Serial.println(data);
+    //Serial.print("[XF] address 0x%02X error ");
+    //Serial.println(data);
     return;
   }
 
   if (telemetryRxBufferCount == 1 && (data < 2 || data > TELEMETRY_RX_PACKET_SIZE-2)) {
-  //  Serial.print("[XF] length 0x%02X error ");
-  //  Serial.println(data);
-        
+    //Serial.print("[XF] length 0x%02X error ");
+    //Serial.println(data);  
     telemetryRxBufferCount = 0;
     return;
   }
@@ -142,8 +142,8 @@ void processCrossfireTelemetryData(uint8_t data)
     telemetryRxBuffer[telemetryRxBufferCount++] = data;
   }
   else {
-   // Serial.print("[XF] array size error ");
-  //  Serial.println(telemetryRxBufferCount);    
+    //Serial.print("[XF] array size error ");
+    //Serial.println(telemetryRxBufferCount);    
     telemetryRxBufferCount = 0;
   }
 
@@ -153,7 +153,6 @@ void processCrossfireTelemetryData(uint8_t data)
   if (telemetryRxBufferCount > 4) {
     uint8_t length = telemetryRxBuffer[1];
 
-   //  Serial.println("Reached step before Process Frame");    
     if (length + 2 == telemetryRxBufferCount) {
       processCrossfireTelemetryFrame();
       telemetryRxBufferCount = 0;
@@ -164,12 +163,12 @@ void processCrossfireTelemetryData(uint8_t data)
 }
 
 void processCrossfireTelemetryFrame(){
-   // Serial.println("Reached Process Frame");
-   // if (!checkCrossfireTelemetryFrameCRC()) {
-   // Serial.println("[XF] CRC error");
-   // return;
-   // }
-  //Serial.println("Reached Step After Process Frame");
+
+    if (!checkCrossfireTelemetryFrameCRC()) {
+    Serial.println("[XF] CRC error");
+    return;
+    }
+
 
   
   uint8_t id = telemetryRxBuffer[2];
@@ -177,6 +176,9 @@ void processCrossfireTelemetryFrame(){
 
 
   switch(id) {
+
+  
+    
     case CF_VARIO_ID:
       if (getCrossfireTelemetryValue<2>(3, value))
         processCrossfireTelemetryValue(VERTICAL_SPEED_INDEX, value);
@@ -219,6 +221,8 @@ void processCrossfireTelemetryFrame(){
 
 
 
+
+
   }
 
   
@@ -231,19 +235,42 @@ void processCrossfireTelemetryValue(uint8_t index, int32_t value)
 {
   
   const CrossfireSensor & sensor = crossfireSensors[index];
-  Serial.print("ID: ");
-  Serial.print(sensor.id);
-  Serial.print(" SUBID: ");
-  Serial.print(sensor.subId);
-  Serial.print(" VALUE ");
-  Serial.print(value);
-  Serial.print(" UNIT ");
-  Serial.print(sensor.unit);
-  Serial.print(" PRECISION ");
-  Serial.print(sensor.precision);
-  Serial.println(" ");
-  //setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId, value, sensor.unit, sensor.precision);
-  //Serial.println(value);
+
+   setTelemetryValue(sensor.id, 0, sensor.subId, index, value, sensor.unit, sensor.precision);
+
+
+}
+
+void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec){
+
+              Serial.print("ID: ");
+            Serial.print(id);
+            Serial.print(" SUBID: ");
+            Serial.print(subId);
+            Serial.print(" INDEX: ");
+            Serial.print(index);
+            Serial.print(" INSTANCE: ");
+            Serial.print(instance);
+            Serial.print(" VALUE ");
+            Serial.print(value);
+            Serial.print(" UNIT ");
+            Serial.print(unit);
+            Serial.print(" PRECISION ");
+            Serial.print(prec);
+            Serial.println(" ");
+            
+  
+  switch(id) {
+      case GPS_ID:
+              if(instance == 14 && index == 0){       //lattitude 
+                sensorGPSLat = value;
+              }
+              if(instance == 15 && index == 0){       //longitude
+                sensorGPSLong = value;
+              }
+      break;
+
+  }    
 }
 
 
