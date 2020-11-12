@@ -25,7 +25,10 @@
 #include <Time.h>
 #include "xfire.h"
 #include <inttypes.h>
+#include "TeensyTimerTool.h"
 
+using namespace TeensyTimerTool;
+PeriodicTimer csrfTimer;
 
 uint32_t crossfireChannels[CROSSFIRE_CHANNELS_COUNT];  //pulate this array with the channel data in the range defined in CROSSFIRE_LOW to CROSSFIRE_HIGH
 double sensorGPSLat;
@@ -104,27 +107,20 @@ const CrossfireSensor & getCrossfireSensor(uint8_t id, uint8_t subId)
 
 void startCrossfire(){                                                   //START THE SERIAL PORT
      CROSSFIRE_SERIAL.begin(CROSSFIRE_BAUD_RATE,SERIAL_8N1_RXINV_TXINV);
+     csrfTimer.begin(runCrossfire, (REFRESH_INTERVAL*1000)); 
 }
 
-
-void runCrossfire()
-{
-  if(millis() - lastRefreshTime >= REFRESH_INTERVAL)                //SEND PULSES FOR CONTROL LINK
-  { 
+void runCrossfire(){
             lastRefreshTime += REFRESH_INTERVAL;
             memset(frame, 0, sizeof(frame));
             uint8_t length = createCrossfireChannelsFrame(frame);
             CROSSFIRE_SERIAL.write(frame, length);   
 
-  } else {                                                          //RECEIVE TELEMETERY BACK
          CROSSFIRE_SERIAL.flush();
         telemetryRxBufferCountStream = CROSSFIRE_SERIAL.available();
         for (int i = 0; i < telemetryRxBufferCountStream; i++) {
             processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
         }     
-  }
-
-
 }
 
 template<int N>

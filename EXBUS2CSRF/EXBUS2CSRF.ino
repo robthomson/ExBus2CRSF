@@ -145,8 +145,7 @@ void setup()
 void loop()
 {
 
-   //run crossfire telemetry and pulses
-   runCrossfire();
+
 
    //run jeti telemetry and pulses
    if ( exBus.HasNewChannelData() )

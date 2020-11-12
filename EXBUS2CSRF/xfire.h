@@ -37,6 +37,8 @@ void processCrossfireTelemetryData(uint8_t data);
 void processCrossfireTelemetryFrame();
 void processCrossfireTelemetryValue(uint8_t index, int32_t value);
 void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec);
+void runCrossfirePulses();
+
 
 uint8_t crc8(const uint8_t * ptr, uint32_t len);
 
