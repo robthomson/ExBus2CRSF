@@ -1,4 +1,31 @@
+/*
+ * Copyright (C) Rob Thomson
+ *
+ * Based on code named fromn the opentx project
+ *   th9x - http://code.google.com/p/th9x
+ *   er9x - http://code.google.com/p/er9x
+ *   gruvin9x - http://code.google.com/p/gruvin9x
+ *
+ * License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
 
+#define XFIRE_DEBUG                       0; 
+
+#define REFRESH_INTERVAL 16  
+#define CROSSFIRE_BAUD_RATE 115200 
+
+// this will not work on teensy with telemery as uart cant handle speed.
+//#define REFRESH_INTERVAL 4    
+//#define CROSSFIRE_BAUD_RATE 400000 
 
 
 uint8_t createCrossfireChannelsFrame(uint8_t * frame);
@@ -8,31 +35,25 @@ bool checkCrossfireTelemetryFrameCRC();
 void  runCrossfireTelemetry();
 void processCrossfireTelemetryData(uint8_t data);
 void processCrossfireTelemetryFrame();
-//bool getCrossfireTelemetryValue(uint8_t index, int32_t & value);
 void processCrossfireTelemetryValue(uint8_t index, int32_t value);
 void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec);
 
 uint8_t crc8(const uint8_t * ptr, uint32_t len);
-
 
 #define CROSSFIRE_CH_BITS           11
 #define CROSSFIRE_CENTER            0x3E0  //992
 #define CROSSFIRE_LOW               173
 #define CROSSFIRE_HIGH              1815
 #define CROSSFIRE_CENTER_CH_OFFSET(ch)            (0)
-
 #define CROSSFIRE_CHANNELS_COUNT  16
 #define MODULE_ADDRESS              0xEE
 #define CHANNELS_ID                 0x16
 #define CROSSFIRE_FRAME_MAXLEN         64
 #define CROSSFIRE_SERIAL Serial1
-
 #define EXBUS_LOW   8000
 #define EXBUS_HIGH  16000
-
 #define TELEMETRY_RX_PACKET_SIZE       128
 #define RADIO_ADDRESS                  0xEA
-
 
 
 enum TelemetryUnit {
@@ -290,7 +311,6 @@ enum CrossfireSensorIndexes {
   UNKNOWN_INDEX,
 };
 
-
 // Frame id
 #define GPS_ID                         0x02
 #define CF_VARIO_ID                    0x07
@@ -304,14 +324,3 @@ enum CrossfireSensorIndexes {
 #define REQUEST_SETTINGS_ID            0x2A
 #define COMMAND_ID                     0x32
 #define RADIO_ID                       0x3A
-
-
-
-
-//high speed  - can only be used on teensy if running with control link only.  so no telemetry
-//#define REFRESH_INTERVAL 4  
-//#define CROSSFIRE_BAUD_RATE 400000 //baud
-
-//slow speed
-#define REFRESH_INTERVAL 16  
-#define CROSSFIRE_BAUD_RATE 115200 //baud
