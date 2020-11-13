@@ -18,7 +18,7 @@
  * GNU General Public License for more details.
  */
 
-#define XFIRE_DEBUG                       0; 
+#define XFIRE_DEBUG                       1; 
 
 #define REFRESH_INTERVAL 16  
 #define CROSSFIRE_BAUD_RATE 115200 

@@ -44,9 +44,17 @@ double sensorVoltage;
 double sensorCurrent;
 double sensorFuel;
 float sensorVario;
-double sensorRSSI;
-double sensorSNR;
-double sensorTXPWR;
+uint32_t  sensor1RSS;
+uint32_t sensor2RSS;
+uint32_t sensorRXQly;
+uint32_t sensorRXSNR; 
+uint32_t sensorAntenna; 
+uint32_t sensorRFMode;
+uint32_t sensorTXPWR;
+uint32_t sensorTXRSSI; 
+uint32_t sensorTXQly;
+uint32_t sensorTXSNR;
+uint32_t sensorCapacity;
 
 uint32_t lastRefreshTime;
 uint8_t frame[CROSSFIRE_FRAME_MAXLEN];
@@ -357,17 +365,39 @@ void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t insta
 
 
  static const int32_t power_values[] = { 0, 10, 25, 100, 500, 1000, 2000, 250 };
-
+ static const int32_t power_mode[] = { 5, 50, 150};
+ 
   switch(id) {
       case LINK_ID:
+              if(instance == 0 && index == 0){       
+                sensor1RSS = -value;
+              } 
+              if(instance == 1 && index == 1){       
+                sensor2RSS = -value;
+              } 
+              if(instance == 2 && index == 2){       
+                sensorRXQly = value;
+              } 
+              if(instance == 3 && index == 3){       
+                sensorRXSNR = value;
+              } 
+              if(instance == 4 && index == 4){       
+                sensorAntenna = value;
+              } 
+              if(instance == 5 && index == 5){       
+                sensorRFMode = power_mode[value];
+              } 
+              if(instance == 6 && index == 6){       
+                sensorTXPWR = power_values[value];
+              }         
+              if(instance == 7 && index == 7){       
+                sensorTXRSSI = -value;
+              } 
                if(instance == 8 && index == 8){      
-                sensorRSSI = value;
+                sensorTXQly = value;
               }        
                if(instance == 9 && index == 9){      
-                sensorSNR = value;
-              }    
-               if(instance == 6 && index == 6){       
-                sensorTXPWR = power_values[value];
+                sensorTXSNR = value;
               }    
           break;
       case CF_VARIO_ID:
@@ -427,7 +457,11 @@ void setTelemetryValue( uint16_t id, uint8_t subId, uint8_t index, uint8_t insta
               //fuel
               if(instance == 13 && index == 3){
                   sensorFuel =  value;                        
-              }    
+              } 
+              //capacity
+              if(instance == 12 && index == 2){
+                  sensorCapacity =  value;                        
+              }                  
           break;
   }    
 }

@@ -74,24 +74,45 @@ extern float sensorYaw;
 extern double sensorVoltage;
 extern double sensorCurrent;
 extern double sensorFuel;
-extern double sensorRSSI;
-extern double sensorSNR;
-extern double sensorTXPWR;
-
+extern uint32_t  sensor1RSS;
+extern uint32_t sensor2RSS;
+extern uint32_t sensorRXQly;
+extern uint32_t sensorRXSNR; 
+extern uint32_t sensorAntenna; 
+extern uint32_t sensorRFMode;
+extern uint32_t sensorTXPWR;
+extern uint32_t sensorTXRSSI; 
+extern uint32_t sensorTXQly;
+extern uint32_t sensorTXSNR;
+extern uint32_t sensorCapacity;
 
 enum
 {
-	ID_VOLTAGE = 1,
-	ID_ALTITUDE,
-	ID_TEMP,
-	ID_CLIMB,
-	ID_FUEL,
-	ID_RPM,
-	ID_GPSLON,
+	ID_GPSLON=1,
 	ID_GPSLAT,
-	ID_DATE,
-	ID_TIME,
-	ID_VAL11, ID_VAL12, ID_VAL13, ID_VAL14, ID_VAL15, ID_VAL16, ID_VAL17, ID_VAL18, ID_VAL19, ID_VAL20, ID_VAL21, ID_VAL22,ID_VAL23,ID_VAL24
+	ID_VAL11, 
+	ID_VAL12, 
+	ID_VAL13, 
+	ID_VAL14, 
+	ID_VAL15, 
+	ID_VAL16, 
+	ID_VAL17, 
+	ID_VAL18, 
+	ID_VAL19, 
+	ID_VAL20, 
+  ID_VAL32,  //meant to be here  
+	ID_VAL21, 
+	ID_VAL22,
+	ID_VAL23,
+	ID_VAL24,
+  ID_VAL25,
+  ID_VAL26,
+  ID_VAL27,
+  ID_VAL28,
+  ID_VAL29,
+  ID_VAL30,
+  ID_VAL31
+
 };
 
 
@@ -119,9 +140,17 @@ JETISENSOR_CONST sensors[] PROGMEM =
   { ID_VAL19,      "Current",        "A",       JetiSensor::TYPE_14b, 1 },
   { ID_VAL20,      "Fuel",        "%",       JetiSensor::TYPE_14b, 1 },
   { ID_VAL21,      "Vario",        "m/s",       JetiSensor::TYPE_14b, 2 },
-  { ID_VAL22,      "RSSI",        "%",       JetiSensor::TYPE_14b, 0 },
-  { ID_VAL23,      "SNR",        "%",       JetiSensor::TYPE_14b, 0 },
-  { ID_VAL24,      "TXPWR",        "mw",       JetiSensor::TYPE_14b, 0 },
+  { ID_VAL22,      "ANT 1 RSSI",        "dBm",       JetiSensor::TYPE_14b, 3 },
+  { ID_VAL23,      "ANT 2 RSSI",        "dBm",       JetiSensor::TYPE_14b, 3 },
+  { ID_VAL24,      "RX Quality",        "%",       JetiSensor::TYPE_14b, 0 },
+  { ID_VAL25,      "RX SNR",        "dB",       JetiSensor::TYPE_14b, 0 },
+  { ID_VAL26,      "ANT DEBUG",        "",       JetiSensor::TYPE_14b, 0 },
+  { ID_VAL27,      "RF MODE",        "hz",       JetiSensor::TYPE_14b, 0 },  
+  { ID_VAL28,      "TX Power",        "mw",       JetiSensor::TYPE_14b, 0 },  
+  { ID_VAL29,      "TX RSSI",        "dBm",       JetiSensor::TYPE_14b, 0 },    
+  { ID_VAL30,      "TX Quality",        "%",       JetiSensor::TYPE_14b, 0 },      
+  { ID_VAL31,      "TX SNR",        "db",       JetiSensor::TYPE_14b, 0 }, 
+  { ID_VAL32,      "Bat. Capacity",        "mAh",       JetiSensor::TYPE_14b, 0 }, 
 	{ 0 } // end of array
 };
 
@@ -134,7 +163,7 @@ void setup()
   startCrossfire();
 
 	exBus.SetDeviceId(0x76, 0x32); // 0x3276
-	exBus.Start("EX Bus", sensors, 2 ); // com port: 1..3 for Teeny, 0 or 1 for AtMega328PB UART0/UART1, others: not used 
+	exBus.Start("CROSSFIRE", sensors, 2 ); // com port: 1..3 for Teeny, 0 or 1 for AtMega328PB UART0/UART1, others: not used 
 
 	exBus.SetJetiboxText(0, "EXBUS2CSRF");
 	exBus.SetJetiboxText(1, "TRANSCODER");
@@ -158,9 +187,7 @@ void loop()
   }
 
    //set telemetry values
-	 exBus.SetSensorValue(ID_TEMP, exbusSensor.GetTemp());
-	 exBus.SetSensorValue(ID_CLIMB, exbusSensor.GetClimb());
-	 exBus.SetSensorValue(ID_RPM, exbusSensor.GetRpm());
+ /* exBus.SetSensorValueGPS(ID_VOLTAGE, false, sensorXFVoltage); */
    exBus.SetSensorValueGPS(ID_GPSLAT, false, sensorGPSLat); 
    exBus.SetSensorValueGPS(ID_GPSLON, true, sensorGPSLong); 
    exBus.SetSensorValue(ID_VAL11, sensorSpeed);
@@ -174,10 +201,18 @@ void loop()
    exBus.SetSensorValue(ID_VAL19, sensorCurrent);
    exBus.SetSensorValue(ID_VAL20, sensorFuel);  
    exBus.SetSensorValue(ID_VAL21, sensorVario);  
-   exBus.SetSensorValue(ID_VAL22, sensorRSSI);    
-   exBus.SetSensorValue(ID_VAL23, sensorSNR);   
-   exBus.SetSensorValue(ID_VAL24, sensorTXPWR);     
-
+   
+   exBus.SetSensorValue(ID_VAL22, sensor1RSS);    
+   exBus.SetSensorValue(ID_VAL23, sensor2RSS);   
+   exBus.SetSensorValue(ID_VAL24, sensorRXQly);  
+   exBus.SetSensorValue(ID_VAL25, sensorRXSNR);     
+   exBus.SetSensorValue(ID_VAL26, sensorAntenna);   
+   exBus.SetSensorValue(ID_VAL27, sensorRFMode); 
+   exBus.SetSensorValue(ID_VAL28, sensorTXPWR); 
+   exBus.SetSensorValue(ID_VAL29, sensorTXRSSI); 
+   exBus.SetSensorValue(ID_VAL30, sensorTXQly); 
+   exBus.SetSensorValue(ID_VAL31, sensorTXSNR);   
+   exBus.SetSensorValue(ID_VAL32, sensorCapacity);             
    exBus.DoJetiExBus();
 
 
