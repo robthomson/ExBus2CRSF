@@ -20,12 +20,13 @@
 
 #define XFIRE_DEBUG                       1; 
 
-#define REFRESH_INTERVAL 16  
-#define CROSSFIRE_BAUD_RATE 115200 
+//#define REFRESH_INTERVAL 4  
+//#define CROSSFIRE_BAUD_RATE 115200 
 
-// this will not work on teensy with telemery as uart cant handle speed.
-//#define REFRESH_INTERVAL 4    
-//#define CROSSFIRE_BAUD_RATE 400000 
+// high speed mode working!!!!.
+#define REFRESH_INTERVAL 4    
+#define CROSSFIRE_BAUD_RATE 400000
+
 
 
 uint8_t createCrossfireChannelsFrame(uint8_t * frame);

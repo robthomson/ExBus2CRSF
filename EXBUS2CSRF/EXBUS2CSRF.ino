@@ -162,6 +162,7 @@ void setup()
 
   startCrossfire();
 
+
 	exBus.SetDeviceId(0x76, 0x32); // 0x3276
 	exBus.Start("CROSSFIRE", sensors, 2 ); // com port: 1..3 for Teeny, 0 or 1 for AtMega328PB UART0/UART1, others: not used 
 

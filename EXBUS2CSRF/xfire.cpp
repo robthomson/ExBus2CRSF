@@ -30,6 +30,7 @@
 using namespace TeensyTimerTool;
 PeriodicTimer csrfTimer;
 
+
 uint32_t crossfireChannels[CROSSFIRE_CHANNELS_COUNT];  //pulate this array with the channel data in the range defined in CROSSFIRE_LOW to CROSSFIRE_HIGH
 double sensorGPSLat;
 double sensorGPSLong;
@@ -55,6 +56,7 @@ uint32_t sensorTXRSSI;
 uint32_t sensorTXQly;
 uint32_t sensorTXSNR;
 uint32_t sensorCapacity;
+
 
 uint32_t lastRefreshTime;
 uint8_t frame[CROSSFIRE_FRAME_MAXLEN];
@@ -114,21 +116,27 @@ const CrossfireSensor & getCrossfireSensor(uint8_t id, uint8_t subId)
 
 
 void startCrossfire(){                                                   //START THE SERIAL PORT
-     CROSSFIRE_SERIAL.begin(CROSSFIRE_BAUD_RATE,SERIAL_8N1_RXINV_TXINV);
+     CROSSFIRE_SERIAL.begin(CROSSFIRE_BAUD_RATE,SERIAL_8N1);
      csrfTimer.begin(runCrossfire, (REFRESH_INTERVAL*1000)); 
 }
 
 void runCrossfire(){
+
+
+  
             lastRefreshTime += REFRESH_INTERVAL;
             memset(frame, 0, sizeof(frame));
             uint8_t length = createCrossfireChannelsFrame(frame);
             CROSSFIRE_SERIAL.write(frame, length);   
+            CROSSFIRE_SERIAL.flush();
+         
 
-         CROSSFIRE_SERIAL.flush();
-        telemetryRxBufferCountStream = CROSSFIRE_SERIAL.available();
-        for (int i = 0; i < telemetryRxBufferCountStream; i++) {
-            processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
-        }     
+              telemetryRxBufferCountStream = CROSSFIRE_SERIAL.available();
+              for (int i = 0; i < telemetryRxBufferCountStream; i++) {
+                  processCrossfireTelemetryData(CROSSFIRE_SERIAL.read());
+              }
+            
+     
 }
 
 template<int N>
